@@ -21,9 +21,14 @@
     <link href="/static/css/dashboard.css" rel="stylesheet">
 
     <link href="/static/css/jquery-ui.min.css" rel="stylesheet">
+
+    <link href="/static/css/zoom-marker.css" rel="stylesheet">
+
     <script src="/static/js/jquery.min.js"></script>
     <script src="/static/js/jquery-ui.min.js"></script>
     <script src="/static/js/html2canvas.js"></script>
+    <script src="/static/js/jquery.mousewheel.min.js"></script>
+    <script src="/static/js/zoom-marker.js"></script>
     <!-- Just for debugging purposes. Don't actually copy these 2 lines! -->
     <!--[if lt IE 9]><script src="../../assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
     <script src="../../assets/js/ie-emulation-modes-warning.js"></script>
@@ -33,10 +38,27 @@
       <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
       <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
     <![endif]-->
-    <style>
-    #draggable {width: 150px;height: 150px;padding :0.5em;}
-    #textarea {width:500px;height:200px;padding:1em;}
-    textarea { border:2px;background-color:transparent;}
+    <style type="text/css">
+
+        .imgDiv {
+            display: inline-block;
+            position: relative;
+        }
+ 
+        .imgDiv .delete {
+            position: absolute;
+            top: 0px;
+            right: 0px;
+            display: none;
+         }
+    	
+    	.imgDiv .plus .minus{
+    		display: none;
+    	}
+
+    	#draggable {width: 150px;height: 150px;padding :0.5em;}
+    	#textarea {width:500px;height:200px;padding:1em;}
+    	textarea { border:2px;background-color:transparent;}
     </style>
 
     <script>
@@ -48,7 +70,16 @@
         $("#textarea").draggable();
       });
 
+      	//将图片上传至HTML
         function readFile(fileDom) {
+        	  var imgplus = "<button class=\"plus\" onclick=\"resizeImage(1)\"> + </button>";
+        	  $("#load_image").append(imgplus);
+        	  var imgminus = "<button class=\"minus\" onclick=\"resizeImage(0)\"> - </button>";
+        	  $("#load_image").append(imgminus);
+        	  var imgdelete = "<button class=\"delete\" onclick=\"deleteImage()\"> X </button><br>";
+              $("#load_image").append(imgdelete);
+        	  var img = "<img id=\"preview\" />";
+        	  $("#load_image").append(img);
               var file = fileDom.files[0];
               var reader = new FileReader();
               
@@ -64,12 +95,71 @@
               reader.readAsDataURL(file); 
             }
 
+        //添加文本框
         function showtextarea(){
-                var txt1 = "<p>Text</p>"
-                $("#textarea").append("<textarea style=\"font-size:36px;\"> 请输入文字 </textarea>");
+                //var txt1 = "<p>Text</p>"
+                var textplus = "<button class=\"plus\" onclick=\"biggerText()\"> + </button>";
+                $("#textarea").append(textplus);
+                var textminus = "<button class=\"minus\" onclick=\"smallerText()\"> - </button>";
+                $("#textarea").append(textminus);
+                var textdelete = "<button class=\"delete\" onclick=\"deleteText()\"> X </button><br>";
+                $("#textarea").append(textdelete);
+                var ta = "<textarea id=\"ta\" style=\"font-size:36px;\"> 请输入文字 </textarea>";
+                $("#textarea").append(ta);
+                //$("#textarea").append("<textarea style=\"font-size:36px;\"> 请输入文字 </textarea>");
                 //document.write("<textarea> 请输入文字 </textarea>");
             }
 
+        //字体加大
+        function biggerText(){
+            var thisEle = $("#ta").css("font-size"); 
+            var textFontSize = parseFloat(thisEle , 10);
+            var unit = thisEle.slice(-2); 
+            textFontSize += 2;
+            $("#ta").css("font-size",  textFontSize + unit );
+        }
+
+        //字体减小
+        function smallerText(){
+            var thisEle = $("#ta").css("font-size"); 
+            var textFontSize = parseFloat(thisEle , 10);
+            var unit = thisEle.slice(-2); 
+            textFontSize -= 2;
+            $("#ta").css("font-size",  textFontSize + unit );
+        }
+
+        function resizeImage(args){
+        	var img = document.getElementById("preview");
+        	if(args){
+        		img.width = img.width * 1.1;
+        		img.height = img.height * 1.1;
+        	}
+        	else{
+        		img.width = img.width / 1.1;
+        		img.height = img.height / 1.1;
+        	}
+        }
+
+        //属性隐藏
+        $(document).ready(init);
+        function init() {
+            $(".imgDiv").mouseenter(function () {
+            	$(this).find(".plus").show();
+            	$(this).find(".minus").show();
+                $(this).find(".delete").show();
+ 
+            });
+ 
+ 
+            $(".imgDiv").mouseleave(function () {
+            	$(this).find(".plus").hide();
+            	$(this).find(".minus").hide();
+                $(this).find(".delete").hide();
+            });
+ 
+        }
+
+        //保存图片
         function takeScreenshot(){
             html2canvas(document.getElementById("myCanvas"),{
                 onrendered:function(canvas){
@@ -78,6 +168,23 @@
                 });
             }
         
+        //删除图片
+        function deleteImage(){
+        	$("#load_image").empty();
+        }
+
+        //删除文字
+		function deleteText(){
+        	$("#textarea").empty();
+        }
+
+        //图片大小调整
+        $(document).ready(function () {
+	        $("#preview").zoomMarker({
+	            rate: 0.2,
+	            markers:[]
+	        });
+	    })
     </script>
   </head>
 
@@ -120,11 +227,9 @@
           <ul class="nav nav-sidebar">
             <li><a href="">Draw</a></li>
             <li><a href="">Add Shape</a></li>
-            <li><a href="">Delete</a></li>
-            <li><a href="">WithDraw</a></li>
           </ul>
           <ul class="nav nav-sidebar">
-            <li><button onclick="takeScreenshot()"> Save </button></li>
+            <li><button class="btn btn-sm btn-primary" onclick="takeScreenshot()"> Save </button></li>
             <li><a href="">Download</a></li>
           </ul>
         </div>
@@ -133,8 +238,8 @@
         <div id="myCanvas" class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
           
           <!--<canvas id="myCanvas" width="1200" height="650" style="border:5px solid black;"> </canvas> -->
-          <div id = "load_image">
-            <img id = "preview" />
+          <div class="imgDiv" id = "load_image">
+
           </div>
 
         <!--
@@ -143,7 +248,7 @@
           </div>
         -->
 
-          <div id = "textarea"> 
+          <div class="imgDiv" id = "textarea"> 
             
           </div>
 
