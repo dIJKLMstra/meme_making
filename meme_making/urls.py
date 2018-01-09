@@ -15,10 +15,15 @@ Including another URLconf
 """
 from django.conf.urls import url
 from django.contrib import admin
-
+from django.conf.urls.static import static
 from index import views as iv
+from django.conf import settings
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^$', iv.index,name='index'),
-]
+    url(r'^upload/',iv.upload,name='upload'),
+    url(r'^upload_info/',iv.upload_pic,name='upload_info'),
+    url(r'^img_list/',iv.listImg,name='img_list'),
+    url(r'^chosedImg/',iv.chosedImg,name='chosedImg'),
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

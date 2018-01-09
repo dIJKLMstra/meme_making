@@ -24,11 +24,16 @@
 
     <link href="/static/css/zoom-marker.css" rel="stylesheet">
 
+    <link href="/static/css/reveal.css" rel="stylesheet">
+    <link href="/static/css/popModal.css" rel="stylesheet">
+
     <script src="/static/js/jquery.min.js"></script>
     <script src="/static/js/jquery-ui.min.js"></script>
     <script src="/static/js/html2canvas.js"></script>
     <script src="/static/js/jquery.mousewheel.min.js"></script>
     <script src="/static/js/zoom-marker.js"></script>
+    <script src="/static/js/jquery.reveal.js"></script>
+    <script src="/static/js/popModal.js"></script>
     <!-- Just for debugging purposes. Don't actually copy these 2 lines! -->
     <!--[if lt IE 9]><script src="../../assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
     <script src="../../assets/js/ie-emulation-modes-warning.js"></script>
@@ -63,12 +68,20 @@
 
     <script>
       $(function(){
+        $("#source_img").draggable();
+        $("#source_img").resizable();
         $("#load_image").draggable();
         $("#load_image").resizable();
         $("#draggable").resizable();
         $("#draggable").draggable();
         $("#textarea").draggable();
       });
+
+        function useSource(){
+            {% load staticfiles %}
+            var sp = "<img src=\"{% static urls %}\" />";
+            $("#source_img").append(sp);
+        }
 
       	//将图片上传至HTML
         function readFile(fileDom) {
@@ -174,7 +187,7 @@
         }
 
         //删除文字
-		function deleteText(){
+		    function deleteText(){
         	$("#textarea").empty();
         }
 
@@ -185,6 +198,26 @@
 	            markers:[]
 	        });
 	    })
+
+      $(function(){
+        $('#dialogModal_ex1').click(function(){
+
+          $('.dialog_content').dialogModal({
+
+          onOkBut: function() {},
+
+          onCancelBut: function() {},
+
+          onLoad: function() {},
+
+          onClose: function() {},
+
+          });
+        });
+       });
+
+
+
     </script>
   </head>
 
@@ -219,27 +252,37 @@
       <div class="row">
         <div class="col-sm-3 col-md-2 sidebar">
           <ul class="nav nav-sidebar">
-            <li class="active"><a href="#">Overview <span class="sr-only">(current)</span></a></li>
-            <li><a href="#">Search</a></li>
-            <li><button class="btn btn-sm btn-primary" onclick="showtextarea()"> Add Text </button> </li>
-            <li><h4><label class="label label-primary" for="upload"> Load Image <input type="file" accept="image/*" id="upload" onchange="readFile(this)" style="display: none"> </label></h4></li>
+            <li><a href="#">   <span class="sr-only">(current)</span></a></li>
+            <li><a href="{% url 'img_list' %}"> 搜索资源 </a></li>
+            <li onclick="useSource()"><a href="#"> 使用资源 </a></li>
+            <li onclick="showtextarea()"><a href="#"> 添加文字 </a> </li>
+            <li>
+              <a href="#">
+              <label for="upload"> 本地图片 
+                <input type="file" accept="image/*" id="upload" onchange="readFile(this)" style="display: none"> 
+              </label>
+              </a>
+            </li>
           </ul>
+      
           <ul class="nav nav-sidebar">
-            <li><a href="">Draw</a></li>
-            <li><a href="">Add Shape</a></li>
-          </ul>
-          <ul class="nav nav-sidebar">
-            <li><button class="btn btn-sm btn-primary" onclick="takeScreenshot()"> Save </button></li>
-            <li><a href="">Download</a></li>
+            <li onclick="takeScreenshot()"><a href="#"> 生成图片 </a></li>
+            <li id="dialogModal_ex1"><a href="#"> 上传图片 </a></li>
           </ul>
         </div>
        
         
         <div id="myCanvas" class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
-          
+          <div id ="source_img">
+           
+          </div>
           <!--<canvas id="myCanvas" width="1200" height="650" style="border:5px solid black;"> </canvas> -->
           <div class="imgDiv" id = "load_image">
 
+          </div>
+
+          <div class="imgDiv" id = "textarea"> 
+            
           </div>
 
         <!--
@@ -248,8 +291,19 @@
           </div>
         -->
 
-          <div class="imgDiv" id = "textarea"> 
-            
+          <div id="dialog_content" class="dialog_content" style="display:none">
+
+          <div class="dialogModal_header">上传图片</div>
+          <br><br>
+          <form action="{% url 'upload_info' %}" method="POST" enctype="multipart/form-data">
+            {% csrf_token %} 
+          <input type="file" name="img">
+          <br>
+          <div class="dialogModal_footer">
+            <input data-dialogModalBut="ok" type="submit" value="提交" onclick="alert("sucess!")" >
+          </div>
+          </form>
+
           </div>
 
           <script>
